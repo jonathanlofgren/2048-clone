@@ -3,7 +3,7 @@ import sys, pygame
 from pygame.locals import *
 pygame.init()
 
-direction = {'up': (1,0), 'right': (0,1), 'down':(-1,0), 'left':(0,-1)}
+direction = {'up': (1,0), 'right': (0,-1), 'down':(-1,0), 'left':(0,1)}
 
 def new_game(size):
     board = [[0 for _ in range(size)] for _ in range(size)]
@@ -28,64 +28,57 @@ def collapse(board, start, direction):
     di, dj = direction
     score = 0
 
-    # keep set of already added cells so as to limit
-    # a cell to being added at most once
-    added = set()
-
-    while i < size and j < size:
-        
-        if not board[i][j]: # skip if its an empty cell
-            continue
-                
-        ii, jj = i+di, j+dj # cell right before
-
-        move = 0
-        while ii and jj and ii < size and jj < size: # go in the opposite direction
-                
-            if not board[ii][jj]: # zero, keep checking
-                move = 1
-                continue
-            elif  board[ii][jj] == board[i][j]: # add cells
-                board[ii][jj] += board[i][j]
-                board[i][j] = 0
-                score += board[ii][jj]
-                move = 0
-                break
-            else: # different valued cell
-                break
-
-            ii, jj = ii+di, jj+dj # go to next cell
-        
-        if move:
-            board[ii][jj] = board[i][j]
+    nonzero = []
+    # get the nonzero cells to l
+    while i > -1 and j > -1 and i < size and j < size:
+        if board[i][j]:
+            nonzero.append(board[i][j])
             board[i][j] = 0
+        i, j = i+di, j+dj
 
-        i, j = i-di, j-dj
+    i = 0
+    # do the adding of equal cells
+    while i < len(nonzero)-1:
+        if nonzero[i] == nonzero[i+1]:
+            nonzero[i], nonzero[i+1] = 2*nonzero[i], 0
+            score += nonzero[i]
+            i += 2
+        else:
+            i += 1
+    
+    # again get only the nonzero cells
+    nonzero = [c for c in nonzero if c != 0]
+
+    # insert the new cells back in board
+    i, j = start
+    for c in nonzero:
+        board[i][j] = c
+        i, j = i+di, j+dj
 
     return score
 
-def make_move(game, move):
-    """ Makes the given move on the given game.
-        Returns the game with the updated board
-        and score.
+def make_move(board, move):
+    """ Makes the given move on the given board
+        and returns the score gained by the move.
+        move should be 'left','right','up' or 'down'
     """
-    board, score = game
+    score = 0
     size = len(board)
     cdir = direction[move]
     
     if move is 'left':
-        start = ((i, 1) for i in range(size))
+        start = ((i, 0) for i in range(size))
     elif move is 'up':
-        start = ((1, i) for i in range(size))
+        start = ((0, i) for i in range(size))
     elif move is 'right':
-        start = ((i, size-2) for i in range(size))
+        start = ((i, size-1) for i in range(size))
     elif move is 'down':
-        start = ((size-2, i) for i in range(size))
+        start = ((size-1, i) for i in range(size))
 
     for s in start:
         score += collapse(board, s, cdir)
 
-    return (board, score)
+    return score
   
     
                 
@@ -93,7 +86,7 @@ def make_move(game, move):
 def print_board(board):
     for row in board:
         print row
-
+    print ""
 
 class GameView:
     def __init__(self):
@@ -115,5 +108,25 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    #main()
         
+    b, s = new_game(4)
+    print_board(b)
+
+    place_random(b)
+    place_random(b)
+    place_random(b)
+    place_random(b)
+    place_random(b)
+    place_random(b)
+    place_random(b)
+    place_random(b)
+    place_random(b)
+    place_random(b)
+
+    print_board(b)
+    
+
+    s = make_move(b, 'down')
+
+    print_board(b)
