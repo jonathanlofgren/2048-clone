@@ -28,30 +28,26 @@ def collapse(board, start, direction):
     di, dj = direction
     score = 0
 
-    nonzero = []
-    # get the nonzero cells to l
-    while i > -1 and j > -1 and i < size and j < size:
-        if board[i][j]:
-            nonzero.append(board[i][j])
-            board[i][j] = 0
-        i, j = i+di, j+dj
+    cells = []
+    added = True
 
-    i = 0
-    # do the adding of equal cells
-    while i < len(nonzero)-1:
-        if nonzero[i] == nonzero[i+1]:
-            nonzero[i], nonzero[i+1] = 2*nonzero[i], 0
-            score += nonzero[i]
-            i += 2
-        else:
-            i += 1
-    
-    # again get only the nonzero cells
-    nonzero = [c for c in nonzero if c != 0]
+    while i > -1 and j > -1 and i < size and j < size:
+        if board[i][j] != 0:
+            if not added and cells[-1] == board[i][j]:
+                cells[-1] *= 2
+                score += cells[-1]
+                added = True
+            else:
+                cells.append(board[i][j])
+                added = False
+
+            board[i][j] = 0
+
+        i, j = i+di, j+dj
 
     # insert the new cells back in board
     i, j = start
-    for c in nonzero:
+    for c in cells:
         board[i][j] = c
         i, j = i+di, j+dj
 
@@ -130,3 +126,4 @@ if __name__ == "__main__":
     s = make_move(b, 'down')
 
     print_board(b)
+    print s
