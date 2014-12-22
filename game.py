@@ -73,57 +73,83 @@ def make_move(board, move):
 
     for s in start:
         score += collapse(board, s, cdir)
-
+        
+    place_random(board)
+        
     return score
-  
-    
-                
+                  
 
 def print_board(board):
     for row in board:
         print row
     print ""
 
+
 class GameView:
     def __init__(self):
-        size = width, height = 450, 450
-        self.window = pygame.display.set_mode(size)
+        self.size = 450, 450
+        self.myfont = pygame.font.SysFont("monospace", 40)
+        self.window = pygame.display.set_mode(self.size)
         pygame.display.set_caption('2048')
-        self.background = pygame.Surface(size)
+        self.background = pygame.Surface(self.size)
         self.background.fill((255,255,255))
         self.window.blit(self.background, (0,0))
         pygame.display.flip()
 
+    def draw(self, board):
+        s = len(board)
+        
+        self.background.fill((255,255,255))
+
+        for i in range(s):
+            for j in range(s):
+                
+                val = board[i][j]
+                if val: 
+                    xpos, ypos = 10 + 110*j, 10 + 110*i
+                    cell = pygame.Surface((100,100))
+                    cell.fill((100,100,100))
+                    text = self.myfont.render(str(val), 1, (0,0,0))
+                    cell.blit(text, (50,50))
+                    self.background.blit(cell, (xpos,ypos))
+                    
+
+        self.window.blit(self.background, (0,0))
+        pygame.display.flip()
+
+
 def main():
     
     view = GameView()
-
+    
+    board, score = new_game(4)
+    place_random(board)
+    place_random(board)
+    
+    view.draw(board)
+    
     while 1:
+        redraw = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT: return
 
+            if event.type == KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    score += make_move(board, 'left')
+                    redraw = True
+                if event.key == pygame.K_RIGHT:
+                    score += make_move(board, 'right')
+                    redraw = True
+                if event.key == pygame.K_UP:
+                    score += make_move(board, 'up')
+                    redraw = True
+                if event.key == pygame.K_DOWN:
+                    score += make_move(board, 'down')
+                    redraw = True
+        if redraw:            
+            view.draw(board)
 
 if __name__ == "__main__":
-    #main()
-        
-    b, s = new_game(4)
-    print_board(b)
-
-    place_random(b)
-    place_random(b)
-    place_random(b)
-    place_random(b)
-    place_random(b)
-    place_random(b)
-    place_random(b)
-    place_random(b)
-    place_random(b)
-    place_random(b)
-
-    print_board(b)
-    
-
-    s = make_move(b, 'down')
-
-    print_board(b)
-    print s
+    main()
+  
