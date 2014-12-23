@@ -1,19 +1,6 @@
 import random, math
-import sys, pygame
-from pygame.locals import *
-pygame.init()
 
 direction = {'up': (1,0), 'right': (0,-1), 'down':(-1,0), 'left':(0,1)}
-
-def color(n):
-    """ Return RGB color for cell value n. """
-
-    val = 255-20*math.log(n,2)
-    if val < 0:
-        val = 0
-
-    return (255, val, val)
-
 
 def new_game(size):
     """ Returns a new game with two random cells placed. """
@@ -32,8 +19,10 @@ def place_random(board):
     value = 2 + 2 * (random.random() < 0.1)
     ind = range(len(board))
     empty = [(i,j) for i in ind for j in ind if not board[i][j]]
-    i, j = random.choice(empty)
-    board[i][j] = value
+    
+    if len(empty) > 0:
+        i, j = random.choice(empty)
+        board[i][j] = value
 
 
 def collapse(board, start, direction):
@@ -48,7 +37,7 @@ def collapse(board, start, direction):
 
     newcells = []
     oldcells = []
-    added = True     # makes sure we only do one add per cell
+    added = True    # makes sure we only do one add per cell
    
     # collect new updated cells to newcells
     while i > -1 and j > -1 and i < size and j < size:
@@ -74,7 +63,7 @@ def collapse(board, start, direction):
         board[i][j] = c
         i, j = i+di, j+dj
 
-    # pad the newcells to compare to oldcells
+    # pad newcells to compare to oldcells
     newcells += [0] * (len(oldcells) - len(newcells))
 
     return (score, newcells != oldcells)
@@ -103,88 +92,47 @@ def make_move(board, move):
         place_random(board)
         
     return sum(score for score,_ in result)
+
      
-
-class GameView:
-    def __init__(self):
-        self.size = 600, 450
-        self.myfont = pygame.font.SysFont("monospace", 35)
-        self.window = pygame.display.set_mode(self.size)
-        pygame.display.set_caption('2048')
-        self.background = pygame.Surface(self.size)
-        self.background.fill((255,255,255))
-        self.window.blit(self.background, (0,0))
-        pygame.display.flip()
-        
-    def color(self, n):
-        """ Return RGB color for cell value n. """
-        
-        val = 255-20*math.log(n,2)
-        if val < 0:
-            val = 0
-        return (255, val, val)
+def in_board((i,j), size):
+    """ True if (i,j) is a valid position in board of size size. """
+    return i > -1 and j > -1 and i < size and j < size
 
 
-    def draw(self, board, score):
-        size = len(board)
-        
-        self.background.fill((20,20,20))
-        
-        # draw the cells
-        for i in range(size):
-            for j in range(size):
-                val = board[i][j]
-                if val: 
-                    xpos, ypos = 10 + 110*j, 10 + 110*i
-                    cell = pygame.Surface((100,100))
-                    cell.fill(self.color(val))
-                    text = self.myfont.render(str(val), 1, (0,0,0))
-                    tx, ty = text.get_size()
+def possible_moves(board):
+    """ Returns a list of the possible moves
+        on board that change the game state.
+        Ex: moves(b) = ['left', 'up']
+    """
+    size = len(board)
+    moves = set()
 
-                    cell.blit(text, (50-tx/2,50-ty/2))
-                    self.background.blit(cell, (xpos,ypos))
-                    
-        # draw score text
-        label = self.myfont.render("Score:", 1, (255,255,255))
-        scoretxt = self.myfont.render(str(score), 1, (255,255,255))
-        self.background.blit(label, (450,10))
-        self.background.blit(scoretxt, (450,50))
-
-        # update display
-        self.window.blit(self.background, (0,0))
-        pygame.display.flip()
-
-
-def main():
+    b = lambda i,j: board[i][j]
     
-    view = GameView()    
-    board, score = new_game(4)
-    view.draw(board,score)
-    
-    while True:
-        redraw = False
+    for i in range(size):
+        for j in range(size):
+            if board[i][j] != 0:
+              
+                left  = (i, j-1)
+                right = (i, j+1)
+                up    = (i-1, j)
+                down  = (i+1, j)
+              
+                # check if the neighbors cells are empty or same number
+                if in_board(left,size):
+                    if not b(*left) or b(*left) == b(i,j):
+                        moves.add('left')
+                
+                if in_board(right,size):
+                    if not b(*right) or b(*right) == b(i,j):
+                        moves.add('right')
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: return
+                if in_board(up,size):
+                    if not b(*up) or b(*up) == b(i,j):
+                        moves.add('up')
 
-            if event.type == KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    score += make_move(board, 'left')
-                    redraw = True
-                if event.key == pygame.K_RIGHT:
-                    score += make_move(board, 'right')
-                    redraw = True
-                if event.key == pygame.K_UP:
-                    score += make_move(board, 'up')
-                    redraw = True
-                if event.key == pygame.K_DOWN:
-                    score += make_move(board, 'down')
-                    redraw = True
-        
+                if in_board(down,size):
+                    if not b(*down) or b(*down) == b(i,j):
+                        moves.add('down')
 
-        if redraw:            
-            view.draw(board, score)
-
-if __name__ == "__main__":
-    main()
-  
+    return list(moves)
