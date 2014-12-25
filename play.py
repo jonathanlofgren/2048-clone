@@ -89,23 +89,23 @@ def main():
             view.draw(board, score)
         
         # get move from ai
-        """
-        best_move = game_ai.best_move(board)
+        best_move = game_ai.best_move((board,score))
         print best_move
+        
+        
+        # make the move and redraw
         score += make_move(board, best_move)
         view.draw(board,score)
-
-        pygame.time.wait(1000)
-        """
-
+        #pygame.time.wait(50)
+        
+        # check if it is game over
         if len(possible_moves(board)) == 0:
-            print "Game over. Score: " + str(score)
-            print "Starting new game...",
+            print "Game over! Score: " + str(score)
+            print "Starting new game..."
             
             pygame.time.wait(3000)
             pygame.event.clear()
 
-            # create new game
             board, score = new_game(4)
             view.draw(board,score)
 
