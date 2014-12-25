@@ -68,6 +68,17 @@ def collapse(board, start, direction):
 
     return (score, newcells != oldcells)
 
+def move_made(game, move):
+    """ Return the new board after
+        doing the specified move as a new list.
+    """
+
+    board, score = game
+    newboard = [x[:] for x in board]
+    score_gained = make_move(newboard, move)
+    return (newboard, score + score_gained)
+
+
 def make_move(board, move):
     """ Makes the given move on the given board
         and returns the score gained by the move.

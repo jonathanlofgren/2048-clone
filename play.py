@@ -1,4 +1,5 @@
 from game import new_game, make_move, possible_moves
+import game_ai
 import sys, pygame, math
 from pygame.locals import *
 pygame.init()
@@ -63,7 +64,7 @@ def main():
     clock = pygame.time.Clock()
     
     while True:
-        clock.tick(20) # limit fps
+        #clock.tick(20) # limit fps
 
         redraw = False
 
@@ -86,7 +87,29 @@ def main():
     
         if redraw:            
             view.draw(board, score)
-            print possible_moves(board)
+        
+        # get move from ai
+        """
+        best_move = game_ai.best_move(board)
+        print best_move
+        score += make_move(board, best_move)
+        view.draw(board,score)
+
+        pygame.time.wait(1000)
+        """
+
+        if len(possible_moves(board)) == 0:
+            print "Game over. Score: " + str(score)
+            print "Starting new game...",
+            
+            pygame.time.wait(3000)
+            pygame.event.clear()
+
+            # create new game
+            board, score = new_game(4)
+            view.draw(board,score)
+
+        
 
 if __name__ == "__main__":
     main()
