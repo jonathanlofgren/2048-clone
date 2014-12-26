@@ -90,7 +90,6 @@ def main():
         
         # get move from ai
         best_move = game_ai.best_move((board,score))
-        print best_move
         
         
         # make the move and redraw
@@ -101,7 +100,7 @@ def main():
         # check if it is game over
         if len(possible_moves(board)) == 0:
             print "Game over! Score: " + str(score)
-            print "Starting new game..."
+            print "Starting new game...\n"
             
             pygame.time.wait(3000)
             pygame.event.clear()
