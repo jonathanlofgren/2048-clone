@@ -1,6 +1,8 @@
-import random, math
+import random
+
 
 direction = {'up': (1,0), 'right': (0,-1), 'down':(-1,0), 'left':(0,1)}
+
 
 def new_game(size):
     """ Returns a new game with two random cells placed. """
@@ -105,8 +107,9 @@ def make_move(board, move):
     return sum(score for score,_ in result)
 
      
-def in_board((i,j), size):
+def in_board(pos, size):
     """ True if (i,j) is a valid position in board of size size. """
+    i, j = pos
     return i > -1 and j > -1 and i < size and j < size
 
 

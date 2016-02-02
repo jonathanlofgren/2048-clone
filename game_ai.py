@@ -1,4 +1,4 @@
-from game import new_game, move_made, possible_moves
+from game import move_made, possible_moves
 
 """ 2048-playing AI
 """
@@ -24,7 +24,7 @@ def best_move(game):
     for move in moves:
         move_score[move] += max_score_search(move_made(game, move), depth)
     
-    move = max(move_score.iterkeys(), key = lambda k: move_score[k])
+    move = max(move_score, key = move_score.get)
     return move
 
 def hueristic_value(board):

@@ -64,7 +64,7 @@ def main():
     clock = pygame.time.Clock()
     
     while True:
-        #clock.tick(20) # limit fps
+        # clock.tick(20) # limit fps
 
         redraw = False
 
@@ -99,8 +99,8 @@ def main():
         
         # check if it is game over
         if len(possible_moves(board)) == 0:
-            print "Game over! Score: " + str(score)
-            print "Starting new game...\n"
+            print("Game over! Score: " + str(score))
+            print("Starting new game...\n")
             
             pygame.time.wait(3000)
             pygame.event.clear()
