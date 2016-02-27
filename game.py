@@ -27,6 +27,11 @@ def place_random(board):
         board[i][j] = value
 
 
+def max_square(board):
+    size = len(board)
+    return max(board[i][j] for i in range(size) for j in range(size))
+
+
 def collapse(board, start, direction):
     """ Collapses a row/column in board, starting from
         the position start and walking in the given direction.
@@ -42,7 +47,7 @@ def collapse(board, start, direction):
     added = True    # makes sure we only do one add per cell
    
     # collect new updated cells to newcells
-    while i > -1 and j > -1 and i < size and j < size:
+    while in_board((i, j), size):
         cell = board[i][j]
         oldcells.append(cell)
 
@@ -70,9 +75,10 @@ def collapse(board, start, direction):
 
     return (score, newcells != oldcells)
 
+
 def move_made(game, move):
-    """ Return the new board after
-        doing the specified move as a new list.
+    """ Return the new game (board, score) after
+        doing the given move.
     """
 
     board, score = game
@@ -110,7 +116,7 @@ def make_move(board, move):
 def in_board(pos, size):
     """ True if (i,j) is a valid position in board of size size. """
     i, j = pos
-    return i > -1 and j > -1 and i < size and j < size
+    return i in range(size) and j in range(size)
 
 
 def possible_moves(board):

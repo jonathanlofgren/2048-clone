@@ -1,6 +1,6 @@
-from game import new_game, make_move, possible_moves
+from game import new_game, make_move, possible_moves, max_square
 import game_ai
-import sys, pygame, math
+import pygame, math
 from pygame.locals import *
 pygame.init()
 
@@ -15,7 +15,6 @@ class GameView:
         self.background.fill((255,255,255))
         self.window.blit(self.background, (0,0))
         pygame.display.flip()
-
         
     def color(self, n):
         """ Return RGB color for cell value n. """
@@ -24,7 +23,6 @@ class GameView:
         if val < 0:
             val = 0
         return (255, val, val)
-
 
     def draw(self, board, score):
         """ Redraw board and score in the view. """
@@ -57,21 +55,24 @@ class GameView:
         pygame.display.flip()
 
         
-def main():    
+def main(playmode):
     view = GameView()    
     board, score = new_game(4)
     view.draw(board,score)
     clock = pygame.time.Clock()
-    
+
     while True:
-        # clock.tick(20) # limit fps
+        clock.tick(20)  # limit fps
 
         redraw = False
 
+        # get move from player
         for event in pygame.event.get():
-            if event.type == QUIT: return
+            if event.type == QUIT:
+                print("Exiting...")
+                return
 
-            if event.type == KEYDOWN:
+            if event.type == KEYDOWN and playmode:
                 if event.key == K_LEFT:
                     score += make_move(board, 'left')
                     redraw = True
@@ -87,19 +88,18 @@ def main():
     
         if redraw:            
             view.draw(board, score)
-        
+
         # get move from ai
-        best_move = game_ai.best_move((board,score))
-        
-        
-        # make the move and redraw
-        score += make_move(board, best_move)
-        view.draw(board,score)
-        #pygame.time.wait(50)
-        
+        if not playmode:
+            best_move = game_ai.best_move((board, score), 'score')
+            # make the move and redraw
+            score += make_move(board, best_move)
+            view.draw(board,score)
+            pygame.time.wait(0)
+
         # check if it is game over
         if len(possible_moves(board)) == 0:
-            print("Game over! Score: " + str(score))
+            print("Game over! Score: " + str(score) + " Max square: " + str(max_square(board)))
             print("Starting new game...\n")
             
             pygame.time.wait(3000)
@@ -108,7 +108,6 @@ def main():
             board, score = new_game(4)
             view.draw(board,score)
 
-        
 
 if __name__ == "__main__":
-    main()
+    main(True)
