@@ -1,6 +1,6 @@
 from game import new_game, make_move, possible_moves, max_square
 import game_ai
-import pygame, math
+import pygame, math, cProfile
 from pygame.locals import *
 pygame.init()
 
@@ -91,23 +91,47 @@ def main(playmode):
 
         # get move from ai
         if not playmode:
-            best_move = game_ai.best_move((board, score), 'score')
+            best_move = game_ai.expectimax_move((board, score), 'gradient')
             # make the move and redraw
             score += make_move(board, best_move)
-            view.draw(board,score)
+            view.draw(board, score)
             pygame.time.wait(0)
 
         # check if it is game over
         if len(possible_moves(board)) == 0:
             print("Game over! Score: " + str(score) + " Max square: " + str(max_square(board)))
             print("Starting new game...\n")
-            
+
             pygame.time.wait(3000)
             pygame.event.clear()
 
             board, score = new_game(4)
-            view.draw(board,score)
+            view.draw(board, score)
+
+
+def ai_mode(number_of_games=1):
+    """ Just let the AI play a number of times
+        without showing the UI.
+    """
+
+    scores = []
+
+    for i in range(number_of_games):
+        board, score = new_game(4)
+        possible = possible_moves(board)
+
+        while possible:
+            move = game_ai.expectimax_move((board, score), 'gradient')
+            score += make_move(board, move)
+            possible = possible_moves(board)
+
+        scores.append(score)
+        print("Game {0}: Score = {1}".format(i+1, score))
+
+    print()
+    print("Mean score = " + str(sum(scores)/float(len(scores))))
 
 
 if __name__ == "__main__":
-    main(True)
+    #cProfile.run('ai_mode(10)', sort='time')
+    main(False)

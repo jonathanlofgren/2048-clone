@@ -1,41 +1,41 @@
 import random
-
+import numpy as np
 
 direction = {'up': (1,0), 'right': (0,-1), 'down':(-1,0), 'left':(0,1)}
 
 
 def new_game(size):
     """ Returns a new game with two random cells placed. """
-
-    board = [[0 for _ in range(size)] for _ in range(size)]
+    board = np.zeros([size, size]).astype('int16')
     place_random(board)
     place_random(board)
 
-    return (board, 0)
+    return board, 0
 
 
 def place_random(board):
     """ Places a value of 2 or 4 at a random
         empty place in the board.
     """
+    # 10% chance for a 4, 90% for a 2
     value = 2 + 2 * (random.random() < 0.1)
-    ind = range(len(board))
-    empty = [(i,j) for i in ind for j in ind if not board[i][j]]
-    
-    if len(empty) > 0:
+    empty = list(zip(*np.nonzero(board == 0)))
+
+    if empty:
         i, j = random.choice(empty)
         board[i][j] = value
 
 
 def max_square(board):
-    size = len(board)
-    return max(board[i][j] for i in range(size) for j in range(size))
+    return board.max()
 
 
 def collapse(board, start, direction):
     """ Collapses a row/column in board, starting from
         the position start and walking in the given direction.
     """
+
+    # TODO: Optimize this. Most time consuming function
 
     size = len(board)   
     i, j = start
@@ -73,21 +73,20 @@ def collapse(board, start, direction):
     # pad newcells to compare to oldcells
     newcells += [0] * (len(oldcells) - len(newcells))
 
-    return (score, newcells != oldcells)
+    return score, newcells != oldcells
 
 
-def move_made(game, move):
+def move_made(game, move, place_new = True):
     """ Return the new game (board, score) after
         doing the given move.
     """
-
     board, score = game
-    newboard = [x[:] for x in board]
-    score_gained = make_move(newboard, move)
-    return (newboard, score + score_gained)
+    new_board = board.copy()
+    score_gained = make_move(new_board, move, place_new)
+    return new_board, score + score_gained
 
 
-def make_move(board, move):
+def make_move(board, move, place_new = True):
     """ Makes the given move on the given board
         and returns the score gained by the move.
         move should be 'left','right','up' or 'down'
@@ -103,11 +102,14 @@ def make_move(board, move):
         start = ((i, size-1) for i in range(size))
     elif move is 'down':
         start = ((size-1, i) for i in range(size))
+    else:
+        print('Invalid move: ' + move)
+        exit(1)
 
     result = [collapse(board, s, cdir) for s in start]
     
     # check if anything was changed by the move
-    if any(change for _,change in result):    
+    if place_new and any(change for _,change in result):
         place_random(board)
         
     return sum(score for score,_ in result)
@@ -116,18 +118,24 @@ def make_move(board, move):
 def in_board(pos, size):
     """ True if (i,j) is a valid position in board of size size. """
     i, j = pos
-    return i in range(size) and j in range(size)
+    return -1 < i and -1 < j and max(i, j) < size
 
 
 def possible_moves(board):
     """ Returns a list of the possible moves
-        on board that change the game state.
+        on board/game that change the game state.
         Ex: moves(b) = ['left', 'up']
     """
+    # TODO: Optimize this, second most time consuming
+
+    # unpack if (board, score) was given
+    if type(board) is tuple:
+        board, _ = board
+
     size = len(board)
     moves = set()
 
-    b = lambda i,j: board[i][j]
+    b = lambda i, j: board[i][j]
     
     for i in range(size):
         for j in range(size):
